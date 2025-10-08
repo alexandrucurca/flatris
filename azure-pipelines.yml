@@ -42,8 +42,8 @@ stages:
   dependsOn: Build
   condition: succeeded()
   jobs:
-  - displayName: "Copy React build to IIS"
-    environment: 'LocalIIS'
+  - deployment: DeployToIIS
+    displayName: "Copy React build to IIS"
     strategy:
       runOnce:
         deploy:
