@@ -21,16 +21,8 @@ steps:
     npm install --legacy-peer-deps
     npm run build
   displayName: 'npm install and build'
-
-- script: |
-    echo "Listing files in current directory:"
-    dir
-    echo "Checking build folder:"
-    dir build
-  displayName: 'Check build folder exists'
-
+  
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: 'build'
     ArtifactName: 'drop'
     publishLocation: 'Container'
