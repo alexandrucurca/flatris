@@ -32,7 +32,6 @@ stages:
 
     - task: PublishBuildArtifacts@1
       inputs:
-        PathtoPublish: 'build'
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
