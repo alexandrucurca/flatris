@@ -1,7 +1,6 @@
-# Node.js with React
-# Build a Node.js project that uses React.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# ======================================
+# React Build + Deploy to Local IIS
+# ======================================
 
 trigger:
 - master
@@ -9,20 +8,62 @@ trigger:
 pool:
   name: Default
   demands:
-    - agent.name -equals TSDN10
+    - agent.name -equals TSDN10   # Local self-hosted agent
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+stages:
+# ---------- BUILD ----------
+- stage: Build
+  displayName: "Build React App"
+  jobs:
+  - job: Build
+    displayName: "Build React App"
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+      displayName: 'Install Node.js'
 
-- script: |
-    npm install --legacy-peer-deps
-    npm run build
-  displayName: 'npm install and build'
-  
-- task: PublishBuildArtifacts@1
-  inputs:
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    - script: |
+        npm install --legacy-peer-deps
+        npm run build
+        echo "Build completed. Listing output folder:"
+        dir build
+      displayName: 'Install dependencies and build React app'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'build'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+# ---------- DEPLOY ----------
+- stage: Deploy
+  displayName: "Deploy to Local IIS"
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: DeployToIIS
+    displayName: "Copy React build to IIS"
+    environment: 'LocalIIS'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+
+          - script: |
+              echo "Stopping IIS..."
+              iisreset /stop
+
+              echo "Clearing old files..."
+              rmdir /S /Q "C:\inetpub\wwwroot\flatris"
+
+              echo "Copying new build..."
+              mkdir "C:\inetpub\wwwroot\flatris"
+              xcopy "$(Pipeline.Workspace)\drop\*" "C:\inetpub\wwwroot\MyReactApp\" /E /Y /I
+
+              echo "Starting IIS..."
+              iisreset /start
+            displayName: "Deploy build to IIS"
+
