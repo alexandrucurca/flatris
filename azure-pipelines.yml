@@ -61,7 +61,7 @@ stages:
 
               echo "Copying new build..."
               mkdir "C:\inetpub\wwwroot\flatris"
-              xcopy "$(Pipeline.Workspace)\drop\*" "C:\inetpub\wwwroot\MyReactApp\" /E /Y /I
+              xcopy "$(Pipeline.Workspace)\drop\*" "C:\inetpub\wwwroot\flatris\" /E /Y /I
 
               echo "Starting IIS..."
               iisreset /start
